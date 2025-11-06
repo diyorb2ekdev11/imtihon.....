@@ -11,7 +11,7 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
 
-  const BASE_URL = process.env.REACT_APP_BASE_URL;
+  const BASE_URL = process.env.REACT_APP_BASE_URL || "https://admin-crm.onrender.com";
   console.log(BASE_URL);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
