@@ -12,7 +12,6 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
   const [error, setError] = useState("");
 
   const BASE_URL = process.env.REACT_APP_BASE_URL || "https://admin-crm.onrender.com";
-  console.log(BASE_URL);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -23,23 +22,59 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
     setError("");
 
     try {
-      const response = await axios.post(`${BASE_URL}/auth/sign-in`, {
-        email: form.email,
-        password: form.password,
-      });
+      const response = await axios.post(
+        `${BASE_URL}/auth/sign-in`,
+        {
+          email: form.email,
+          password: form.password,
+        },
+        {
+          timeout: 10000,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      localStorage.setItem("token", response.data.data.token);
-      setAuth(true);
-      navigate("/dashboard");
+      if (response.data?.data?.token) {
+        localStorage.setItem("token", response.data.data.token);
+        setAuth(true);
+        navigate("/dashboard");
+      } else {
+        setError("Token olinmadi. Qaytadan urinib ko'ring.");
+      }
     } catch (err: any) {
-      if (err.response?.status === 404) {
+      console.error("Login error:", err);
+      console.error("Error details:", {
+        code: err.code,
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      
+      if (err.code === 'ERR_NETWORK' || err.message === 'Network Error' || !err.response) {
+        setError("Internet aloqasi yo'q yoki serverga ulanib bo'lmadi. Internetingizni tekshiring.");
+      }
+      else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError("Server javob bermadi. Biroz vaqt o'tgach qaytadan urinib ko'ring.");
+      }
+      else if (err.response?.status === 404) {
         setError("Login endpoint topilmadi yoki noto'g'ri URL.");
-      } else if (err.response?.data?.message) {
+      }
+      else if (err.response?.status === 401) {
+        setError("Email yoki parol noto'g'ri. Qaytadan tekshiring.");
+      }
+      else if (err.response?.status === 400) {
+        setError(err.response.data?.message || "Noto'g'ri ma'lumot kiritildi.");
+      }
+      else if (err.response?.status >= 500) {
+        setError("Server xatolik yuz berdi. Biroz vaqt o'tgach qaytadan urinib ko'ring.");
+      }
+      else if (err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
-        setError("Loginda xatolik yuz berdi.");
+        setError("Loginda xatolik yuz berdi. Qaytadan urinib ko'ring.");
       }
-      console.error(err);
     }
   };
 
@@ -149,33 +184,3 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
 };
 
 export default Login;
-
-// return (
-//     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#f0f0f0' }}>
-//       <form onSubmit={handleSubmit} style={{ background: 'white', padding: '20px', borderRadius: '8px', boxShadow: '0 0 10px rgba(0,0,0,0.1)', width: '300px' }}>
-//         <h1 style={{ textAlign: 'center' }}>Xush kelibsiz 👋</h1>
-//         <p style={{ textAlign: 'center' }}>Hisobingizga kirish uchun email va parolni kiriting</p>
-//         <input
-//           type="email"
-//           placeholder="Email"
-//           value={email}
-//           onChange={(e) => setEmail(e.target.value)}
-//           style={{ width: '100%', padding: '10px', margin: '10px 0', border: '1px solid #ccc', borderRadius: '4px' }}
-//           required
-//         />
-//         <input
-//           type="password"
-//           placeholder="Parol"
-//           value={password}
-//           onChange={(e) => setPassword(e.target.value)}
-//           style={{ width: '100%', padding: '10px', margin: '10px 0', border: '1px solid #ccc', borderRadius: '4px' }}
-//           required
-//         />
-//         {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
-//         <button type="submit" style={{ width: '100%', padding: '10px', background: 'black', color: 'white', border: 'none', borderRadius: '4px' }}>
-//           Kirish
-//         </button>
-//       </form>
-//     </div>
-//   );
-// }
