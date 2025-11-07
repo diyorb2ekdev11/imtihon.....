@@ -33,14 +33,13 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
       setAuth(true);
       navigate("/dashboard");
     } catch (err: any) {
+      console.log(err);
+      
       if (err.response?.status === 404) {
         setError("Login endpoint topilmadi yoki noto'g'ri URL.");
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Loginda xatolik yuz berdi.");
+      } else if (err?.message) {
+        setError(err.message);
       }
-      console.error(err);
     }
   };
 
