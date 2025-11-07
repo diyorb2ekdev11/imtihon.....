@@ -54,3 +54,4 @@ export default function Table<T>({ endpoint, columns, renderRow }: TableProps<T>
     </table>
   );
 }
+

@@ -51,7 +51,8 @@ const Sidebar = () => {
                 color: location.pathname === item.path ? "#90caf9" : "white",
                 background:
                   location.pathname === item.path ? "#333" : "transparent",
-                padding: "17px 12px",
+                padding: "17px 15px",
+                fontSize:"22px",
                 borderRadius: "8px",
                 transition: "0.3s",
               }}
